@@ -1,34 +1,57 @@
-import { SharedArray } from "k6/data";
-import { vu } from "k6/execution";
-import { Options } from "k6/options";
-import { deleteUser, getUser, updateUser } from "../apis/reqres";
-import { users } from "../data/users";
+import exec from "k6/execution";
+import type { Options } from "k6/options";
 import { logger } from "../utils/logger";
+import { fromToPairs } from "../data/from-to-pairs";
+import { modeCombinations } from "../data/mode-combinations";
 
-const data = new SharedArray("users", function () {
-  return users;
-});
+const { vu } = exec;
 
 export const options: Options = {
-  scenarios: {
-    login: {
-      executor: 'per-vu-iterations',
-      vus: 5,
-      iterations: 10,
-      maxDuration: '1h30m',
-    },
-  },
+	scenarios: {
+		flexTest: {
+			executor: "per-vu-iterations",
+			vus: 1,
+			iterations: 1,
+			maxDuration: "10m",
+			env: {
+				fromToKey: "tacomaToEverett",
+				modeCombinationKey: "transitWithFlex",
+			},
+		},
+	},
 };
 
-export default function test () {
-  // Get a random user from data that isn't currently being tested
-  const user = data[vu.idInTest - 1];
+// type TypeMatrix = {
+// 	modeName: string;
+// 	fromName: string;
+// 	toName: string;
+// 	modeCombination: ModeCombination;
+// }[];
 
-  logger.info(
-    `Running iteration ${vu.iterationInInstance} for user id ${user.id} with name ${user.first_name} ${user.last_name}`
-  );
+// const testMatrix = new SharedArray("testMatrix", () => {
+//   const filteredFromToPairs =
 
-  getUser(user);
-  updateUser(user);
-  deleteUser(user.id);
+// 	return Object.keys(fromToPairs).reduce<TypeMatrix>((prev, cur) => {
+// 		const fromToPair = fromToPairs[cur];
+// 		return prev.concat(
+// 			Object.keys(modeCombinations).reduce<TypeMatrix>((prev, cur) => {
+// 				const modeCombination = modeCombinations[cur];
+// 				prev.push({
+// 					modeName: cur,
+// 					fromName: fromToPair.fromPlace,
+// 					toName: fromToPair.toPlace,
+// 					modeCombination: modeCombination,
+// 				});
+// 				return prev;
+// 			}, []),
+// 		);
+// 	}, []);
+// });
+
+export default function test() {
+	const fromToPair = fromToPairs[__ENV.fromToKey];
+	const modeCombination = modeCombinations[__ENV.modeCombinationKey];
+
+	// biome-ignore lint/style/noUnusedTemplateLiteral: <explanation>
+	logger.info(`Running iteration for mode combination HELLO HELLO 4`);
 }
